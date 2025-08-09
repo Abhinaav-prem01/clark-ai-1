@@ -20,7 +20,7 @@ async function searchWithTavily(query: string, maxResults: number): Promise<Sear
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       query,
@@ -32,8 +32,8 @@ async function searchWithTavily(query: string, maxResults: number): Promise<Sear
   });
 
   if (!res.ok) throw new Error(`Tavily error ${res.status}`);
-  const data = await res.json();
-  const results: SearchResultItem[] = (data.results || []).map((r: any) => ({
+  const data: { results?: Array<{ title: string; url: string; content?: string; snippet?: string }> } = await res.json();
+  const results: SearchResultItem[] = (data.results || []).map((r) => ({
     title: r.title,
     url: r.url,
     snippet: r.content ?? r.snippet,
@@ -43,7 +43,6 @@ async function searchWithTavily(query: string, maxResults: number): Promise<Sear
 
 async function searchWithDuckDuckGo(query: string, maxResults: number): Promise<SearchResponse> {
   const q = encodeURIComponent(query);
-  // Use the no-JS HTML endpoint that is stable to parse server-side
   const url = `https://html.duckduckgo.com/html/?q=${q}`;
   const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
   if (!res.ok) throw new Error(`DuckDuckGo error ${res.status}`);
@@ -51,15 +50,17 @@ async function searchWithDuckDuckGo(query: string, maxResults: number): Promise<
 
   const dom = new JSDOM(html);
   const doc = dom.window.document;
-  const anchors = Array.from(doc.querySelectorAll("a.result__a"));
-  const results: SearchResultItem[] = anchors.slice(0, maxResults).map((a: any) => {
-    const title = a.textContent?.trim() || a.getAttribute("href") || "Untitled";
-    const href = a.getAttribute("href") || "";
-    // Try to find the snippet container nearby
-    const parent = a.closest(".result\n, .result__body, .result__result");
-    const snippet = parent?.querySelector(".result__snippet")?.textContent?.trim() || undefined;
-    return { title, url: href, snippet };
-  }).filter(r => r.url.startsWith("http"));
+  const anchors = Array.from(doc.querySelectorAll<HTMLAnchorElement>("a.result__a"));
+  const results: SearchResultItem[] = anchors
+    .slice(0, maxResults)
+    .map((a) => {
+      const title = a.textContent?.trim() || a.getAttribute("href") || "Untitled";
+      const href = a.getAttribute("href") || "";
+      const parent = a.closest<HTMLElement>(".result, .result__body, .result__result");
+      const snippet = parent?.querySelector<HTMLElement>(".result__snippet")?.textContent?.trim() || undefined;
+      return { title, url: href, snippet };
+    })
+    .filter((r) => r.url.startsWith("http"));
 
   return { provider: "duckduckgo", query, results };
 }

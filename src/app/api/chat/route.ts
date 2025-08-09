@@ -8,6 +8,14 @@ export async function POST(req: Request) {
   const prompt: string = typeof body === "string" ? body : body.prompt ?? body.input ?? "";
   const requestedModel = typeof body === "object" ? body.model : undefined;
 
+  const isProd = process.env.NODE_ENV === "production";
+  const hasProvider = Boolean(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY || process.env.OPENAI_BASE_URL);
+
+  if (isProd && !hasProvider) {
+    const message = `This deployment requires an AI provider. Please set OPENAI_API_KEY (or ANTHROPIC_API_KEY) or OPENAI_BASE_URL in environment variables.`;
+    return new Response(message, { status: 200, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+  }
+
   const model = getModel(requestedModel);
 
   const system = [
@@ -21,7 +29,9 @@ export async function POST(req: Request) {
     model,
     system,
     prompt,
-    temperature: 0.2,
+    temperature: 0.1,
+    maxOutputTokens: 256,
+    topP: 0.9,
   });
 
   return result.toTextStreamResponse();

@@ -5,7 +5,7 @@ import { useCompletion } from "@ai-sdk/react";
 import ReactMarkdown from "react-markdown";
 
 export default function Home() {
-  const { completion, input, setInput, handleInputChange, handleSubmit, isLoading, stop, error } = useCompletion({ api: "/api/chat", streamProtocol: "text" });
+  const { completion, input, handleInputChange, handleSubmit, isLoading, stop, error } = useCompletion({ api: "/api/chat", streamProtocol: "text" });
 
   return (
     <div className="min-h-screen flex flex-col">

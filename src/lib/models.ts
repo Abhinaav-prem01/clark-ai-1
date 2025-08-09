@@ -12,8 +12,8 @@ function getOpenAI() {
   const apiKey = env("OPENAI_API_KEY");
   let baseURL = env("OPENAI_BASE_URL");
 
-  // Auto-detect local Ollama if no API key and no base URL
-  if (!apiKey && !baseURL) {
+  // Auto-detect local Ollama only during development when no keys or base URL are set
+  if (process.env.NODE_ENV !== "production" && !apiKey && !baseURL) {
     baseURL = "http://localhost:11434/v1";
   }
 
@@ -30,22 +30,25 @@ function getAnthropic() {
  * Otherwise an OpenAI-compatible provider is used (supports custom baseURL).
  */
 export function getModel(modelName?: string): AnyModel {
-  // If using Ollama autodetect and no model specified, default to a common local model name
-  const defaultModel = env("DEFAULT_MODEL") || (env("OPENAI_API_KEY") || env("OPENAI_BASE_URL") ? "gpt-4o-mini" : "mistral");
+  const isProd = process.env.NODE_ENV === "production";
+  // Default model selection:
+  // - In prod: default to a fast hosted model (gpt-4o-mini) unless explicitly set
+  // - In dev without keys: fall back to a local model name for Ollama
+  const defaultModel = env("DEFAULT_MODEL") || (isProd ? "gpt-4o-mini" : (env("OPENAI_API_KEY") || env("OPENAI_BASE_URL") ? "gpt-4o-mini" : "mistral"));
   const name = modelName || defaultModel;
 
   if (name.toLowerCase().startsWith("claude")) {
     const anthropic = getAnthropic();
-    return anthropic(name as any);
+    return anthropic(name as unknown as never);
   }
 
   const openai = getOpenAI();
   const baseURL = env("OPENAI_BASE_URL");
   // Use chat compatibility when pointing to non-OpenAI endpoints (e.g., Ollama)
   if (baseURL && !baseURL.includes("api.openai.com")) {
-    return openai.chat(name as any);
+    return openai.chat(name as unknown as never);
   }
-  return openai(name as any);
+  return openai(name as unknown as never);
 }
 
 /** Returns a human-friendly provider name detected from the modelName or env. */
