@@ -3,4 +3,8 @@
   publish = ".next"
 
 [[plugins]]
-  package = "@netlify/plugin-nextjs" 
+  package = "@netlify/plugin-nextjs"
+
+# Environment variables should be set in Netlify dashboard:
+# HUGGINGFACE_API_KEY = your_hugging_face_token_here
+# DEFAULT_MODEL = hf-Qwen/Qwen2.5-4B-Instruct 
