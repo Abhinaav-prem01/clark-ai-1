@@ -32,7 +32,7 @@ async function searchWithTavily(query: string, maxResults: number): Promise<Sear
   });
 
   if (!res.ok) throw new Error(`Tavily error ${res.status}`);
-  const data: { results?: Array<{ title: string; url: string; content?: string; snippet?: string }> } = await res.json();
+  const data = await res.json() as { results?: Array<{ title: string; url: string; content?: string; snippet?: string }> };
   const results: SearchResultItem[] = (data.results || []).map((r) => ({
     title: r.title,
     url: r.url,
@@ -50,14 +50,14 @@ async function searchWithDuckDuckGo(query: string, maxResults: number): Promise<
 
   const dom = new JSDOM(html);
   const doc = dom.window.document;
-  const anchors = Array.from(doc.querySelectorAll<HTMLAnchorElement>("a.result__a"));
+  const anchors = Array.from(doc.querySelectorAll("a.result__a") as NodeListOf<HTMLAnchorElement>);
   const results: SearchResultItem[] = anchors
     .slice(0, maxResults)
     .map((a) => {
       const title = a.textContent?.trim() || a.getAttribute("href") || "Untitled";
       const href = a.getAttribute("href") || "";
-      const parent = a.closest<HTMLElement>(".result, .result__body, .result__result");
-      const snippet = parent?.querySelector<HTMLElement>(".result__snippet")?.textContent?.trim() || undefined;
+      const parent = a.closest(".result, .result__body, .result__result") as HTMLElement | null;
+      const snippet = parent?.querySelector(".result__snippet")?.textContent?.trim() || undefined;
       return { title, url: href, snippet };
     })
     .filter((r) => r.url.startsWith("http"));

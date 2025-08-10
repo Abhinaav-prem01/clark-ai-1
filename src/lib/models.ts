@@ -4,6 +4,9 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 // Minimal type to avoid tight coupling on internal SDK types
 export type AnyModel = ReturnType<ReturnType<typeof createOpenAI>> | ReturnType<ReturnType<typeof createAnthropic>>;
 
+// Type for model names to avoid 'any' usage
+type ModelName = string;
+
 function env(key: string): string | undefined {
   return process.env[key] && process.env[key]!.length > 0 ? process.env[key] : undefined;
 }
@@ -39,16 +42,16 @@ export function getModel(modelName?: string): AnyModel {
 
   if (name.toLowerCase().startsWith("claude")) {
     const anthropic = getAnthropic();
-    return anthropic(name as unknown as never);
+    return anthropic(name as ModelName);
   }
 
   const openai = getOpenAI();
   const baseURL = env("OPENAI_BASE_URL");
   // Use chat compatibility when pointing to non-OpenAI endpoints (e.g., Ollama)
   if (baseURL && !baseURL.includes("api.openai.com")) {
-    return openai.chat(name as unknown as never);
+    return openai.chat(name as ModelName);
   }
-  return openai(name as unknown as never);
+  return openai(name as ModelName);
 }
 
 /** Returns a human-friendly provider name detected from the modelName or env. */
