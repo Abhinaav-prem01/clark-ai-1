@@ -10,7 +10,7 @@ HUGGINGFACE_API_KEY=your_hf_token_here  # FREE tier available
 OPENAI_API_KEY=your_openai_key_here     # Optional
 ANTHROPIC_API_KEY=your_anthropic_key    # Optional
 TAVILY_API_KEY=your_tavily_key          # Optional for web search
-DEFAULT_MODEL=hf-microsoft/DialoGPT-medium
+DEFAULT_MODEL=hf-Qwen/Qwen2.5-4B-Instruct
 ```
 
 2. Run the dev server:
@@ -32,16 +32,17 @@ npm run dev
 - **FREE tier available** with generous limits
 - Get your API key at: https://huggingface.co/settings/tokens
 - Set `HUGGINGFACE_API_KEY=your_token` in environment variables
-- Recommended models: `microsoft/DialoGPT-medium`, `gpt2`, `microsoft/DialoGPT-large`
+- Recommended models: `Qwen/Qwen2.5-4B-Instruct`, `microsoft/DialoGPT-medium`, `gpt2`
 
 ### 2. Local Ollama (Development)
 Run locally with free models:
 - Install Ollama (`https://ollama.com`), then pull a model:
-  - `ollama pull mistral`
-  - `ollama pull llama3.1:8b-instruct`
+  - `ollama pull qwen2.5:4b` (recommended - Qwen 4B Instruct)
+  - `ollama pull mistral` (alternative)
+  - `ollama pull llama3.1:8b-instruct` (alternative)
 - In `.env.local` set:
   - `OPENAI_BASE_URL=http://localhost:11434/v1`
-  - `DEFAULT_MODEL=mistral`
+  - `DEFAULT_MODEL=qwen2.5:4b`
   - Leave `OPENAI_API_KEY` empty
 
 ### 3. Other Providers

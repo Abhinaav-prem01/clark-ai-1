@@ -20,7 +20,7 @@ This is a demo deployment. To get full AI responses, you can:
 1. **Set up Hugging Face API** (FREE tier available):
    - Get your API key at https://huggingface.co/settings/tokens
    - Set HUGGINGFACE_API_KEY in Netlify environment variables
-   - Models like "microsoft/DialoGPT-medium" work great!
+   - Models like "Qwen/Qwen2.5-4B-Instruct" work great!
 
 2. **Set up other API keys** in Netlify environment variables:
    - OPENAI_API_KEY (for GPT models)
@@ -45,7 +45,7 @@ I'm here to help with research, answer questions, and provide citations when you
   }
 
   try {
-    const modelName = requestedModel || process.env.DEFAULT_MODEL || "hf-microsoft/DialoGPT-medium";
+    const modelName = requestedModel || process.env.DEFAULT_MODEL || "hf-Qwen/Qwen2.5-4B-Instruct";
     
     // Check if this is a Hugging Face model
     if (modelName.toLowerCase().startsWith("hf-")) {

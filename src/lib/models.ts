@@ -86,7 +86,7 @@ export function getModel(modelName?: string): AnyModel {
   // Default model selection:
   // - In prod: default to a fast hosted model (gpt-4o-mini) unless explicitly set
   // - In dev without keys: fall back to a local model name for Ollama
-  const defaultModel = env("DEFAULT_MODEL") || (isProd ? "hf-microsoft/DialoGPT-medium" : (env("OPENAI_API_KEY") || env("OPENAI_BASE_URL") ? "gpt-4o-mini" : "mistral"));
+  const defaultModel = env("DEFAULT_MODEL") || (isProd ? "hf-Qwen/Qwen2.5-4B-Instruct" : (env("OPENAI_API_KEY") || env("OPENAI_BASE_URL") ? "gpt-4o-mini" : "qwen2.5:4b"));
   const name = modelName || defaultModel;
 
   if (name.toLowerCase().startsWith("claude")) {
