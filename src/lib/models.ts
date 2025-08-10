@@ -28,16 +28,65 @@ function getAnthropic() {
   return createAnthropic({ apiKey });
 }
 
+// Hugging Face API integration
+async function callHuggingFaceAPI(prompt: string, model: string): Promise<string> {
+  const apiKey = env("HUGGINGFACE_API_KEY");
+  const apiUrl = `https://api-inference.huggingface.co/models/${model}`;
+  
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  
+  if (apiKey) {
+    headers["Authorization"] = `Bearer ${apiKey}`;
+  }
+
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      inputs: prompt,
+      parameters: {
+        max_new_tokens: 256,
+        temperature: 0.1,
+        top_p: 0.9,
+        do_sample: true,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Hugging Face API error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  
+  // Handle different response formats from Hugging Face
+  if (Array.isArray(data) && data.length > 0) {
+    return data[0].generated_text || data[0].text || JSON.stringify(data[0]);
+  }
+  
+  if (typeof data === "string") {
+    return data;
+  }
+  
+  if (data.generated_text) {
+    return data.generated_text;
+  }
+  
+  return JSON.stringify(data);
+}
+
 /**
  * Select an LLM by name. If `modelName` starts with "claude", Anthropic is used.
- * Otherwise an OpenAI-compatible provider is used (supports custom baseURL).
+ * If it starts with "hf-", Hugging Face is used. Otherwise an OpenAI-compatible provider is used.
  */
 export function getModel(modelName?: string): AnyModel {
   const isProd = process.env.NODE_ENV === "production";
   // Default model selection:
   // - In prod: default to a fast hosted model (gpt-4o-mini) unless explicitly set
   // - In dev without keys: fall back to a local model name for Ollama
-  const defaultModel = env("DEFAULT_MODEL") || (isProd ? "gpt-4o-mini" : (env("OPENAI_API_KEY") || env("OPENAI_BASE_URL") ? "gpt-4o-mini" : "mistral"));
+  const defaultModel = env("DEFAULT_MODEL") || (isProd ? "hf-microsoft/DialoGPT-medium" : (env("OPENAI_API_KEY") || env("OPENAI_BASE_URL") ? "gpt-4o-mini" : "mistral"));
   const name = modelName || defaultModel;
 
   if (name.toLowerCase().startsWith("claude")) {
@@ -54,8 +103,13 @@ export function getModel(modelName?: string): AnyModel {
   return openai(name as ModelName);
 }
 
+// Export the Hugging Face function for use in the API route
+export { callHuggingFaceAPI };
+
 /** Returns a human-friendly provider name detected from the modelName or env. */
-export function getProviderName(modelName?: string): "openai" | "anthropic" {
+export function getProviderName(modelName?: string): "openai" | "anthropic" | "huggingface" {
   const name = modelName || process.env.DEFAULT_MODEL || "gpt-4o-mini";
-  return name.toLowerCase().startsWith("claude") ? "anthropic" : "openai";
+  if (name.toLowerCase().startsWith("claude")) return "anthropic";
+  if (name.toLowerCase().startsWith("hf-")) return "huggingface";
+  return "openai";
 } 
