@@ -1,5 +1,7 @@
 # Clark – AI Research Chat (Web Search + Citations)
 
+#GDG
+
 ## Quickstart
 
 1. Create `.env.local` file and set API keys:
