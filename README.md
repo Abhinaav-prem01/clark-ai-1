@@ -1,6 +1,7 @@
 # Clark – AI Research Chat (Web Search + Citations)
 
 #GDG
+#sid 540774263
 
 ## Quickstart
 
